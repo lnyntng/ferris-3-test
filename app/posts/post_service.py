@@ -28,11 +28,8 @@ class PostsService(Service):
         pprint(post.key.kind())
         if not post:
             raise f3.NotFoundException()
-            pprint(1)
         if not post.key.kind() == 'Post':
             raise f3.InvalidRequestException()
-            pprint(2)
-        pprint(3)
         message = f3.messages.serialize(PostMessage, post)
         pprint(4)
         return message

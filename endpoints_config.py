@@ -4,3 +4,4 @@ from ferris3 import endpoints
 endpoints.add('app/default-endpoint.yaml', default=True)
 
 # Add any additional endpoints below
+endpoints.add('app/default-endpoint.yaml', default=True)
