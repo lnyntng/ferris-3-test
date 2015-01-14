@@ -2,9 +2,9 @@ import ferris3 as f3
 
 from google.appengine.ext import ndb, db
 from ferris3 import Model, Service, hvild, auto_service
+from ferris3.translations import StringTranslationProperty, TextTranslationProperty, ChoiceTranslationProperty
 from pprint import pprint
 
-from app.custom_properties.translations import *
 from app.choices_presets.common_choices import *
 from app.choices_presets.program_choices import *
 
@@ -26,6 +26,8 @@ class Program(Model):
     description_cost = ndb.StringProperty()
     is_default = ndb.BooleanProperty(default=False)
     item_language = ChoiceTranslationProperty(choices=LANGUAGES)
+    string_test = StringTranslationProperty()
+    text_test = TextTranslationProperty()
 
 ProgramMessage = f3.model_message(Program)
 ProgramListMessage = f3.list_message(ProgramMessage)

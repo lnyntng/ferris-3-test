@@ -1,4 +1,5 @@
 import ferris3
+from pprint import pprint
 
 #
 # Method implementations.
@@ -7,7 +8,12 @@ import ferris3
 
 
 def list_impl(ListMessage, query):
-    return ferris3.ToolChain(query) \
+    q = ferris3.ToolChain(query)
+
+    pprint(query)
+
+    #model = protopigeon.to_entity(ListMessage, )
+    return q \
         .messages.serialize_list(ListMessage) \
         .value()
 

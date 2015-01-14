@@ -24,3 +24,9 @@ class UserMessage(messages.Message):
 class GeoPtMessage(messages.Message):
     lat = messages.FloatField(1)
     lon = messages.FloatField(2)
+
+
+class StringTranslationMessage(messages.Message):
+    english = messages.StringField(1)
+    spanish = messages.StringField(2)
+    portuguese = messages.StringField(3)
