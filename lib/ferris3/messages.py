@@ -2,6 +2,7 @@ import protopigeon
 
 model_message = protopigeon.model_message
 list_message = protopigeon.list_message
+compose = protopigeon.compose
 
 
 def serialize(MessageType, entity, **kwargs):
@@ -29,3 +30,12 @@ def serialize_list(ListMessageType, entities):
     message.nextPageToken = next_page_token
 
     return message
+
+
+def model_message_with_keyname(Model):
+    from protorpc import messages
+
+    class KeynameMessage(messages.Message):
+        keyname = messages.StringField(1, required=True)
+
+    return protopigeon.compose(model_message(Model), KeynameMessage)

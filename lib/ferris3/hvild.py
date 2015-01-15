@@ -1,5 +1,6 @@
 import ferris3
-from pprint import pprint
+from google.appengine.ext import ndb
+import logging
 
 #
 # Method implementations.
@@ -8,12 +9,7 @@ from pprint import pprint
 
 
 def list_impl(ListMessage, query):
-    q = ferris3.ToolChain(query)
-
-    pprint(query)
-
-    #model = protopigeon.to_entity(ListMessage, )
-    return q \
+    return ferris3.ToolChain(query) \
         .messages.serialize_list(ListMessage) \
         .value()
 
@@ -74,6 +70,18 @@ def insert_impl(Model, Message, request):
         .messages.deserialize(Model) \
         .ndb.put() \
         .messages.serialize(Message) \
+        .value()
+
+
+def insert_with_keyname_impl(Model, Message, request):
+    raw_model = ferris3.ToolChain(request) \
+        .messages.deserialize(Model) \
+        .value()
+
+    raw_model.key = ndb.Key(Model, request.keyname)
+    raw_model.put()
+
+    return ferris3.ToolChain(request) \
         .value()
 
 #
@@ -190,6 +198,21 @@ def insert(Model, Message=None, name='insert'):
     @ferris3.auto_method(returns=Message, name=name, http_method='POST')
     def inner(self, request=(Message,)):
         return insert_impl(Model, Message, request)
+
+    return inner
+
+
+def insert_with_keyname(Model, Message=None, name='insert'):
+    """
+    Implements the insert method. The request fields are determined by the ``Message`` parameter.
+    """
+    if not Message:
+        Message = ferris3.model_message(Model)
+        MessageWithKeyName = ferris3.messages.model_message_with_keyname(Model)
+
+    @ferris3.auto_method(returns=MessageWithKeyName, name=name, http_method='POST')
+    def inner(self, request=(MessageWithKeyName,)):
+        return insert_with_keyname_impl(Model, Message, request)
 
     return inner
 
