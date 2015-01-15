@@ -1,6 +1,5 @@
 import ferris3
 from google.appengine.ext import ndb
-import logging
 
 #
 # Method implementations.

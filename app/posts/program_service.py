@@ -1,11 +1,9 @@
 import ferris3 as f3
 import protopigeon
-import logging
 
 from google.appengine.ext import ndb, db
 from ferris3 import Model, Service, hvild, auto_service
 from ferris3.translations import StringTranslationProperty, TextTranslationProperty, ChoiceTranslationProperty
-from protorpc import messages
 
 from app.choices_presets.common_choices import *
 from app.choices_presets.program_choices import *
@@ -38,12 +36,7 @@ class Program(Model):
         self.key = ndb.Key(Program, keyname)
 
 
-class KeynameMessage(messages.Message):
-    keyname = messages.StringField(1, required=True)
-
-
 ProgramMessage = f3.model_message(Program)
-ProgramWithKeynameMessage = protopigeon.compose(ProgramMessage, KeynameMessage)
 ProgramListMessage = f3.list_message(ProgramMessage)
 
 
