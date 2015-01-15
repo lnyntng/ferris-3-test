@@ -30,3 +30,16 @@ class StringTranslationMessage(messages.Message):
     english = messages.StringField(1)
     spanish = messages.StringField(2)
     portuguese = messages.StringField(3)
+
+
+class TextTranslationMessage(messages.Message):
+    english = messages.StringField(1)
+    spanish = messages.StringField(2)
+    portuguese = messages.StringField(3)
+
+
+class ChoiceTranslationMessage(messages.Message):
+    keyname = messages.StringField(1)
+    english = messages.StringField(2)
+    spanish = messages.StringField(3)
+    portuguese = messages.StringField(4)

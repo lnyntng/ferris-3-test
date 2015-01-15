@@ -36,13 +36,7 @@ ProgramListMessage = f3.list_message(ProgramMessage)
 @auto_service
 class ProgramsService(Service):
     get = hvild.get(Program)
+    list = hvild.list(Program)
     delete = hvild.delete(Program)
     insert = hvild.insert(Program)
     update = hvild.update(Program)
-
-    @f3.auto_method(returns=ProgramListMessage, name="list", http_method='GET')
-    def list(self, request):
-        query = Program.query()
-        return f3.ToolChain(query) \
-            .messages.serialize_list(ProgramListMessage) \
-            .value()

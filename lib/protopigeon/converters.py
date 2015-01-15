@@ -188,11 +188,48 @@ class StructuredConverter(Converter):
 class StringTranslationConverter(Converter):
     @staticmethod
     def to_message(Model, property, field, value):
-        return StringTranslationMessage(
-            english=value.english,
-            spanish=value.spanish,
-            portuguese=value.portuguese
-        )
+        from .translators import to_message
+        return to_message(value, field.type)
+
+    @staticmethod
+    def to_model(Message, property, field, value):
+        from .translators import to_entity
+        if value:
+            return to_entity(value, property._modelclass)
+
+    @staticmethod
+    def to_field(Model, property, count):
+        from .translators import model_message
+
+        message_class = model_message(property._modelclass)
+        return messages.MessageField(message_class, count, repeated=property._repeated)
+
+
+class TextTranslationConverter(Converter):
+    @staticmethod
+    def to_message(Model, property, field, value):
+        from .translators import to_message
+        return to_message(value, field.type)
+
+    @staticmethod
+    def to_model(Message, property, field, value):
+        from .translators import to_entity
+        if value:
+            return to_entity(value, property._modelclass)
+
+    @staticmethod
+    def to_field(Model, property, count):
+        from .translators import model_message
+
+        message_class = model_message(property._modelclass)
+        return messages.MessageField(message_class, count, repeated=property._repeated)
+
+
+class ChoiceTranslationConverter(Converter):
+    @staticmethod
+    def to_message(Model, property, field, value):
+        from .translators import to_message
+        return to_message(value, field.type)
 
     @staticmethod
     def to_model(Message, property, field, value):
@@ -225,5 +262,7 @@ converters = {
     'BlobKeyProperty': BlobKeyConverter,
     'StructuredProperty': StructuredConverter,
     'LocalStructuredProperty': StructuredConverter,
-    'StringTranslationProperty': StringTranslationConverter
+    'StringTranslationProperty': StringTranslationConverter,
+    'TextTranslationProperty': TextTranslationConverter,
+    'ChoiceTranslationProperty': ChoiceTranslationConverter
 }

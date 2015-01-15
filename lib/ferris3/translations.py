@@ -1,4 +1,5 @@
 from google.appengine.ext import ndb, db
+from protorpc import messages
 
 
 class StringTranslation(ndb.Model):
@@ -31,9 +32,21 @@ class StringTranslationProperty(ndb.StructuredProperty):
         super(StringTranslationProperty, self).__init__(StringTranslation, **kwds)
 
 
+class StringTranslationMessage(messages.Message):
+    english = messages.StringField(1)
+    spanish = messages.StringField(2)
+    portuguese = messages.StringField(3)
+
+
 class TextTranslationProperty(ndb.StructuredProperty):
     def __init__(self, **kwds):
         super(TextTranslationProperty, self).__init__(TextTranslation, **kwds)
+
+
+class TextTranslationMessage(messages.Message):
+    english = messages.StringField(1)
+    spanish = messages.StringField(2)
+    portuguese = messages.StringField(3)
 
 
 class ChoiceTranslationProperty(ndb.StructuredProperty):
@@ -77,6 +90,20 @@ class ChoiceTranslationProperty(ndb.StructuredProperty):
         return '%s' % (self)
 
 
+class ChoiceTranslationMessage(messages.Message):
+    keyname = messages.StringField(1)
+    english = messages.StringField(2)
+    spanish = messages.StringField(3)
+    portuguese = messages.StringField(4)
+
+
 class BlobKeyTranslationProperty(ndb.StructuredProperty):
     def __init__(self, **kwds):
         super(BlobKeyTranslationProperty, self).__init__(BlobKeyTranslation, **kwds)
+
+
+class BlobKeyTranslationMessage(messages.Message):
+    #TODO: Make tests with this property type
+    english = messages.StringField(1)
+    spanish = messages.StringField(2)
+    portuguese = messages.StringField(3)
