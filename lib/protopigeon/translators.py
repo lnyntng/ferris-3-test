@@ -9,9 +9,18 @@ class holder(object):
     pass
 
 
-def _common_fields(entity, message, only=None, exclude=None):
+class cloudSqlProperty(object):
+    _repeated = False
+    _required = False
+
+    def __init__(self, _repeated, _required):
+        self._repeated = _repeated
+        self._required = _required
+
+
+def _common_fields(entity, message, only=None, exclude=None, cloudSql=False):
     message_fields = [x.name for x in message.all_fields()]
-    entity_properties = [k for k, v in entity._properties.iteritems()]
+    entity_properties = [k for k, v in entity._properties.iteritems()] if not cloudSql else [k for k, v in entity.iteritems()]
 
     if (inspect.isclass(entity) and not issubclass(entity, ndb.Expando)) and not isinstance(entity, ndb.Expando):
         fields = set(message_fields) & set(entity_properties)
@@ -27,8 +36,8 @@ def _common_fields(entity, message, only=None, exclude=None):
     return message_fields, entity_properties, fields
 
 
-def to_message(entity, message, converters=None, only=None, exclude=None, key_field='id'):
-    message_fields, entity_properties, fields = _common_fields(entity, message, only, exclude)
+def to_message(entity, message, converters=None, only=None, exclude=None, key_field='id', cloudSql=False):
+    message_fields, entity_properties, fields = _common_fields(entity, message, only, exclude, cloudSql)
 
     converters = dict(default_converters.items() + converters.items()) if converters else default_converters
 
@@ -36,13 +45,14 @@ def to_message(entity, message, converters=None, only=None, exclude=None, key_fi
     values = {}
 
     # Key first
-    if key_field is not False:
+    if key_field is not False and not cloudSql:
         values[key_field] = converters['Key'].to_message(entity, 'key', key_field, entity.key) if entity.key else None
 
     # Other fields
     for field in fields:
-        if field not in entity._properties:
-            continue
+        if not cloudSql:
+            if field not in entity._properties:
+                continue
 
         property = entity._properties[field]
         message_field = message.field_by_name(field)
@@ -64,6 +74,39 @@ def to_message(entity, message, converters=None, only=None, exclude=None, key_fi
         for name, value in values.iteritems():
             setattr(message, name, value)
         return message
+
+
+def to_cloudsql_message(entity, message, converters=None, only=None, exclude=None, cloudSql=True):
+    message_fields, entity_properties, fields = _common_fields(entity, message, only, exclude, cloudSql)
+
+    converters = dict(default_converters.items() + converters.items()) if converters else default_converters
+
+    # Key first
+    values = {}
+
+    # Other fields
+    for field in fields:
+        if field not in entity.keys():
+            continue
+
+        property = entity[field]
+        message_field = message.field_by_name(field)
+        value = entity[field]
+
+        converter = converters[message_field.__class__.__name__.replace('Field', 'Property')]
+
+        if converter:
+            if value is not None:  # only try to convert if the value is meaningful, otherwise leave it as Falsy.
+                value = converter.to_message(entity, property, message_field, value)
+            values[field] = value
+
+    if inspect.isclass(message):
+        return message(**values)
+    else:
+        for name, value in values.iteritems():
+            setattr(message, name, value)
+        return message
+
 
 
 def to_entity(message, model, converters=None, only=None, exclude=None, key_field='id'):
@@ -138,6 +181,43 @@ def model_message(Model, only=None, exclude=None, converters=None, key_field='id
 
         if converter:
             field_dict[name] = converter.to_field(Model, prop, count)
+
+    return type(class_name, (messages.Message,), field_dict)
+
+
+def model_cloudsql_message(Model, only=None, exclude=None, converters=None, key_field='id'):
+    class_name = Model.__name__ + 'Message'
+    field_names = Model.__table__.columns
+
+    if exclude:
+        field_names = [x for x in field_names if x not in exclude]
+
+    if only:
+        field_names = [x for x in field_names if x in only]
+
+    converters = dict(default_converters.items() + converters.items()) if converters else default_converters
+
+    # Add in the key field.
+    key_holder = holder()
+    key_holder.name = 'key',
+    key_holder._repeated = False
+    field_dict = {
+        key_field: converters['Key'].to_field(Model, key_holder, 1)
+    }
+
+    # Add all other fields.
+    count = 2
+    for column in field_names:
+        if column.name != key_field:
+            prop = cloudSqlProperty(
+                _repeated=False,
+                _required=not column.nullable
+            )
+            converter = converters.get(column.type.__class__.__name__ + 'Property', None)
+
+            if converter:
+                field_dict[column.name] = converter.to_field(Model, prop, count)
+            count += 1
 
     return type(class_name, (messages.Message,), field_dict)
 

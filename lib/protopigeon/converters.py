@@ -2,7 +2,7 @@ import datetime
 from protorpc import messages, message_types, util
 from google.appengine.ext import ndb
 from google.appengine.api import users
-from .types import DateMessage, TimeMessage, UserMessage, GeoPtMessage, StringTranslationMessage
+from .types import DateMessage, TimeMessage, UserMessage, GeoPtMessage
 
 
 class Converter(object):
@@ -184,67 +184,6 @@ class StructuredConverter(Converter):
         message_class = model_message(property._modelclass)
         return messages.MessageField(message_class, count, repeated=property._repeated)
 
-
-class StringTranslationConverter(Converter):
-    @staticmethod
-    def to_message(Model, property, field, value):
-        from .translators import to_message
-        return to_message(value, field.type)
-
-    @staticmethod
-    def to_model(Message, property, field, value):
-        from .translators import to_entity
-        if value:
-            return to_entity(value, property._modelclass)
-
-    @staticmethod
-    def to_field(Model, property, count):
-        from .translators import model_message
-
-        message_class = model_message(property._modelclass)
-        return messages.MessageField(message_class, count, repeated=property._repeated)
-
-
-class TextTranslationConverter(Converter):
-    @staticmethod
-    def to_message(Model, property, field, value):
-        from .translators import to_message
-        return to_message(value, field.type)
-
-    @staticmethod
-    def to_model(Message, property, field, value):
-        from .translators import to_entity
-        if value:
-            return to_entity(value, property._modelclass)
-
-    @staticmethod
-    def to_field(Model, property, count):
-        from .translators import model_message
-
-        message_class = model_message(property._modelclass)
-        return messages.MessageField(message_class, count, repeated=property._repeated)
-
-
-class ChoiceTranslationConverter(Converter):
-    @staticmethod
-    def to_message(Model, property, field, value):
-        from .translators import to_message
-        return to_message(value, field.type)
-
-    @staticmethod
-    def to_model(Message, property, field, value):
-        from .translators import to_entity
-        if value:
-            return to_entity(value, property._modelclass)
-
-    @staticmethod
-    def to_field(Model, property, count):
-        from .translators import model_message
-
-        message_class = model_message(property._modelclass)
-        return messages.MessageField(message_class, count, repeated=property._repeated)
-
-
 converters = {
     'Key': KeyConverter,
     'BooleanProperty': BooleanConverter,
@@ -261,8 +200,5 @@ converters = {
     'KeyProperty': KeyConverter,
     'BlobKeyProperty': BlobKeyConverter,
     'StructuredProperty': StructuredConverter,
-    'LocalStructuredProperty': StructuredConverter,
-    'StringTranslationProperty': StringTranslationConverter,
-    'TextTranslationProperty': TextTranslationConverter,
-    'ChoiceTranslationProperty': ChoiceTranslationConverter
+    'LocalStructuredProperty': StructuredConverter
 }
